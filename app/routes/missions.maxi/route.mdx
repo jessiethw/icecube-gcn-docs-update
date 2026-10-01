@@ -3,8 +3,6 @@ handle:
   breadcrumb: MAXI
 ---
 
-import { WithFeature } from '~/root'
-
 import logo from './logo.png'
 
 # Monitor of All-sky X-ray Image (MAXI)
@@ -25,7 +23,7 @@ import logo from './logo.png'
 **End of Operations:** Limited by ISS lifetime, currently 2030
 
 **Data Archive:**
-[JAXA](https://www.darts.isas.jaxa.jp/astro/maxi/)
+[JAXA](https://darts.isas.jaxa.jp/en/missions/maxi/)
 
 [MAXI](http://maxi.riken.jp/top/) is a wide-field X-ray telescope designed to perform an all-sky survey. MAXI was developed by JAXA; data processing and operations are conducted by JAXA, Riken, Osaka University, Tokyo Institute of Technology, Aoyama Gakuin University, Nihon University, Kyoto University, Miyazaki University, and Chuo University.
 
@@ -51,8 +49,6 @@ import logo from './logo.png'
 
 </div>
 
-<WithFeature MAXI_JSON>
-
 **JSON-Serialized GCN Notices Types in GCN Kafka:**
 
 MAXI provides Notices for both known and unknown source detections by GSC.
@@ -65,9 +61,71 @@ Both Notice types provide basic alert metadata, event timing, sky position, flux
 | `gcn.notices.maxi.gsc.known`   | Known source detections, including source/event identification, sky position, flux information, and detection information                                       | 200 minutes |
 | `gcn.notices.maxi.gsc.unknown` | Unknown source detections or transient candidates, including sky position, flux information, detection information, and localization information when available | 200 minutes |
 
-MAXI [known source](/schema/stable/gcn/notices/MAXI/gsc.known.schema.json) and [unknown source](/schema/stable/gcn/notices/MAXI/gsc.unknown.schema.json) schemas are available. Example JSON message files are available for [known source](/schema/stable/gcn/notices/MAXI/gsc.known.example.json) Notices and for unknown source Notices with [no position uncertainty](/schema/stable/gcn/notices/MAXI/gsc.unknown.example_noerror.json), [circular](/schema/stable/gcn/notices/MAXI/gsc.unknown.example_circle.json), [elliptical](/schema/stable/gcn/notices/MAXI/gsc.unknown.example_ellipse.json), and [rectangular](/schema/stable/gcn/notices/MAXI/gsc.unknown.example_rectangle.json) localization information. See the [Schema Browser](/docs/schema/stable/gcn/notices/MAXI/alert.schema.json) for more information on the properties defined in the schemas.　Detailed description of the properties and examples of MAXI Notices are available in the [GCN Schema GitHub project](https://github.com/nasa-gcn/gcn-schema/tree/main/gcn/notices/MAXI).
+MAXI [known source](/schema/stable/gcn/notices/maxi/gsc.known.schema.json) and [unknown source](/schema/stable/gcn/notices/maxi/gsc.unknown.schema.json) schemas are available. Example JSON message files are available for [known source](/schema/stable/gcn/notices/maxi/gsc.known.example.json) Notices and for unknown source Notices with [no position uncertainty](/schema/stable/gcn/notices/maxi/gsc.unknown.noerror.example.json), [circular](/schema/stable/gcn/notices/maxi/gsc.unknown.circle.example.json), [elliptical](/schema/stable/gcn/notices/maxi/gsc.unknown.ellipse.example.json), and [rectangular](/schema/stable/gcn/notices/maxi/gsc.unknown.rectangle.example.json) localization information. See the [Schema Browser](/docs/schema/stable/gcn/notices/maxi) for more information on the properties defined in the schemas.　Detailed description of the properties and examples of MAXI Notices are available in the [GCN Schema GitHub project](https://github.com/nasa-gcn/gcn-schema/tree/main/gcn/notices/maxi).
 
-</WithFeature>
+The MAXI team maintains an archive of their [JSON Notices](https://maxi.riken.jp/alert/novae/json_notices/).
+
+## Additional Notes on MAXI/GSC Notice Fields
+
+### `trigger_time`
+
+The `trigger_time` reported in MAXI Notices is a representative time associated with the
+MAXI analysis time interval for which the detection significance is highest. This time may
+not always be identical to the detection time reported later in GCN Circulars or other
+follow-up reports, where a different representative time may be used depending on
+the event and the details of the analysis.
+
+### `flux` and `flux_error`
+
+The `flux` reported in MAXI Notices is given in units of `erg cm-2 s-1` to be compatible
+with the core Spectral schema. It is not directly derived from spectral analysis.
+Instead, it is derived from the MAXI count rate of the source or event, normalized by the count
+rate measured from Crab observations, and converted to physical flux assuming a canonical
+Crab spectrum. The `flux_error` field gives the 1-sigma statistical uncertainty on this flux.
+
+### `flux_spectral_band` and `flux_spectral_unit`
+
+The `flux_spectral_band` field specifies the energy band used for the reported `flux`. The
+`flux_spectral_unit` field specifies the unit of the energy band, typically `keV`.
+
+### `detection_timescale` and `detection_timescale_units`
+
+The `detection_timescale` field gives the time scale used in the MAXI detection analysis.
+The unit is specified by `detection_timescale_units`, which may be `s` for seconds, `scan`
+for one MAXI/GSC camera scan, `orbit` for one ISS orbit, or `d` for days.
+
+### `event_name`
+
+For MAXI known-source Notices, `event_name` gives the name of the detected known source.
+For MAXI unknown-source Notices, `event_name` gives the transient or GRB name when available.
+
+### Localization fields
+
+The `ra` and `dec` fields give the source position in degrees in J2000 equatorial coordinates.
+
+The `ra_dec_error` field gives the statistical localization uncertainty. When the localization is circular,
+this field is a single radius in degrees. When the localization is elliptical, this field is a three-element
+array giving the major radius, minor radius, and position angle of the error ellipse in degrees.
+
+The `rectangular_error_corners` field gives the four corners of a rectangular error box.
+Each corner is represented as an `[RA, Dec]` pair in degrees in J2000 equatorial coordinates.
+
+The `containment_probability` field gives the probability that the true source position is contained
+within the reported localization region.
+
+The `systematic_included` field indicates whether the reported localization uncertainty includes
+systematic uncertainty.
+
+### `band_flux_low`, `band_flux_med`, and `band_flux_high`
+
+For MAXI known-source Notices, these fields provide MAXI flux estimates in predefined energy bands.
+Each field is a two-element array containing `[flux, flux_error]`, where the flux is given in `erg cm-2 s-1`
+and the error is the 1-sigma statistical uncertainty.
+
+- `band_flux_low`: 2-4 keV band
+- `band_flux_med`: 4-10 keV band
+- `band_flux_high`: 10-20 keV band
+
 **Common GCN Circular Types:**
 
 <div className="overflow-table">

@@ -237,6 +237,14 @@ export function useDomain() {
   }
 }
 
+export function ContactLink() {
+  return (
+    <p className="usa-paragraph">
+      For help please <Link to="/contact">contact us.</Link>
+    </p>
+  )
+}
+
 function Progress() {
   const { state } = useNavigation()
   const showProgress = useSpinDelay(state !== 'idle')
@@ -268,10 +276,10 @@ export function Layout({ children }: { children?: ReactNode }) {
         <DevBanner />
         <Header />
         <NewsBanner>
-          New! BOOM Notices and Schema v7.0.0. See{' '}
+          Updates to LVK & CHIME Notices, Schema v7.2.3! See{' '}
           <Link
             className="usa-link"
-            to="/news#new-boom-notices-and-schema-v700"
+            to="/news#lvk-notices-exclusively-available-in-json-over-kafka-updated-chime-notices-and-schema-v723"
           >
             news and announcements
           </Link>
@@ -293,6 +301,7 @@ function ErrorUnexpected({ children }: { children?: ReactNode }) {
     <GridContainer className="usa-section">
       <h1>Unexpected error {children}</h1>
       <p className="usa-intro">An unexpected error occurred.</p>
+      <ContactLink />
       <FormGroup>
         <ButtonGroup>
           <Link to="/" className="usa-button">
@@ -313,6 +322,7 @@ function ErrorUnauthorized() {
         We're sorry, you must log in to access the page you're looking for.
       </p>
       <p className="usa-paragraph">Log in to access that page, or go home.</p>
+      <ContactLink />
       <FormGroup>
         <ButtonGroup>
           <Link
@@ -342,6 +352,7 @@ function ErrorNotFound() {
         Visit our homepage for helpful tools and resources, or contact us and
         we'll point you in the right direction.
       </p>
+      <ContactLink />
       <FormGroup>
         <ButtonGroup>
           <Link to="/" className="usa-button">

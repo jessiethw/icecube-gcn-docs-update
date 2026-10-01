@@ -13,6 +13,14 @@ circulars
 support
   src build/email-incoming/support
 
+@appclients
+circulars-producer
+  clientKey GcnCircularsProducerUserPoolClient
+  envResourceName CircularsKafkaTableStreamLambda
+  scope gcn.nasa.gov/kafka-circulars-producer
+  envClientIdName KAFKA_CLIENT_ID
+  envClientSecretName KAFKA_CLIENT_SECRET
+
 @eventbridge
 app_clients
   src build/eventbridge/app-clients
@@ -40,6 +48,10 @@ circulars-email
   table circulars
   src build/table-streams/circulars-email
 
+circulars-index
+  table circulars
+  src build/table-streams/circulars-index
+
 synonyms
   src build/table-streams/synonyms
 
@@ -66,6 +78,16 @@ announcement_subscriptions
 circulars_subscriptions
   email *String
   sub **String
+  PointInTimeRecovery true
+
+circular_eventType_email
+  sub *String
+  uuid **String
+  PointInTimeRecovery true
+
+circular_eventType_email_subscriptions
+  uuid *String
+  eventType **String
   PointInTimeRecovery true
 
 email_notification
@@ -124,6 +146,11 @@ team_members
 
 topics
   topicId *String
+  PointInTimeRecovery true
+
+team_invites
+  teamId *String
+  email **String
   PointInTimeRecovery true
 
 @tables-indexes
@@ -195,6 +222,18 @@ team_members
   teamId *String
   name usersByTeam
 
+team_members
+  topicId *String
+  name membersByTopicId
+
+team_invites
+  email *String
+  name invitesByEmail
+
+topics 
+  topicName *String
+  name topicsByName
+
 @aws
 runtime nodejs24.x
 region us-east-1
@@ -205,12 +244,10 @@ hydrate false
 tracing true
 
 @search
-instanceType t3.small.search
+instanceType c8g.large.search
 instanceCount 3
 availabilityZoneCount 3
 volumeSize 10
-dedicatedMasterCount 3
-dedicatedMasterType t3.small.search
 autoSoftwareUpdateEnabled true
 offPeakWindowEnabled true
 
@@ -228,4 +265,4 @@ nasa-gcn/architect-plugin-search  # Add an AWS OpenSearch Serverless collection.
 nasa-gcn/architect-plugin-dynamodb-local
 nasa-gcn/architect-plugin-tracing
 eventbridge # Enable sending Eventbridge Events to lambdas
-circulars-producer-client
+app-clients # Provision app clients tied to specific scopes
